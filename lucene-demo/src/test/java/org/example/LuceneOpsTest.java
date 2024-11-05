@@ -17,7 +17,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.example.dto.Book;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
