@@ -41,5 +41,10 @@
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.magese</groupId>
+            <artifactId>ik-analyzer</artifactId>
+            <version>7.7.1</version>
+        </dependency>
     </dependencies>
 </project>
