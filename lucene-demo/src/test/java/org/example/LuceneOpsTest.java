@@ -2,13 +2,8 @@ package org.example;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.document.*;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -32,10 +27,12 @@ public class LuceneOpsTest {
 
     @Before
     public void setUp() throws Exception {
+        System.out.println("执行预删除索引目录");
         // clean directory
         File directory = new File(LUCENE_INDEX);
         deleteDirectory(directory);
 
+        System.out.println("执行模拟数据采集");
         // 模拟数据采集
         Book bookOne = new Book();
         bookOne.setId(1);
@@ -152,6 +149,158 @@ public class LuceneOpsTest {
         }
         // 释放资源
         reader.close();
+    }
+
+    /**
+     * 域操作
+     * @throws Exception
+     */
+    @Test
+    public void testCreateIndexWithDifferentFields() throws Exception {
+        List<Document> documents = new ArrayList<>();
+        BOOK_ARRAY_LIST.forEach(book -> {
+            Document doc = new Document();
+            // IntPoint 分词 索引 不存储 存储结合 StoredField
+            Field id = new IntPoint("id", book.getId());
+            Field idStored = new StoredField("id", book.getId());
+            // 分词、索引、存储 TextField
+            Field name = new TextField("name", book.getName(), Field.Store.YES);
+            // 分词、索引、不存储 但是是数字类型，所以使用FloatPoint
+            Field price = new FloatPoint("price", book.getPrice());
+            // 分词、索引、不存储 TextField
+            Field desc = new TextField("desc", book.getDesc(), Field.Store.NO);
+
+            doc.add(id);
+            doc.add(idStored);
+            doc.add(name);
+            doc.add(price);
+            doc.add(desc);
+
+            documents.add(doc);
+        });
+
+        // 3.创建Analyzer分词器,分析文档，对文档进行分词
+        Analyzer analyzer = new StandardAnalyzer();
+        // 创建Directory对象,声明索引库的位置
+        Directory directory = FSDirectory.open(Paths.get(LUCENE_INDEX));
+        // 创建IndexWriteConfig对象，写入索引需要的配置
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+        // 4.创建IndexWriter写入对象 添加文档对象document
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        for (Document doc : documents) {
+            indexWriter.addDocument(doc);
+        }
+        // 释放资源
+        indexWriter.close();
+        System.out.println("索引创建成功");
+
+        // 执行方法后指定目录生成的文件如下
+        // D:\temp\lucene\index\write.lock
+        // D:\temp\lucene\index\_0.cfe
+        // D:\temp\lucene\index\_0.cfs
+        // D:\temp\lucene\index\_0.si
+        // D:\temp\lucene\index\segments_1
+    }
+
+    /**
+     * 基于已有索引新增 document
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAddDocument() throws Exception {
+        // 先执行索引创建
+        testCreateIndexWithDifferentFields();
+
+        // 创建分词器
+        Analyzer analyzer = new StandardAnalyzer();
+        // 创建Directory流对象
+        Directory directory = FSDirectory.open(Paths.get(LUCENE_INDEX));
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+        // 创建写入对象
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        // 创建Document
+        Document document = new Document();
+        document.add(new TextField("id", "1001", Field.Store.YES));
+        document.add(new TextField("name", "game", Field.Store.YES));
+        document.add(new TextField("desc", "one world one dream", Field.Store.NO));
+        // 添加文档 完成索引添加
+        indexWriter.addDocument(document);
+        // 释放资源
+        indexWriter.close();
+        System.out.println("基于已有索引新增 document");
+
+        // 执行方法后指定目录生成的文件如下
+        // D:\temp\lucene\index\write.lock
+        // D:\temp\lucene\index\_0.cfe
+        // D:\temp\lucene\index\_0.cfs
+        // D:\temp\lucene\index\_0.si
+        // D:\temp\lucene\index\_1.cfe
+        // D:\temp\lucene\index\_1.cfs
+        // D:\temp\lucene\index\_1.si
+        // D:\temp\lucene\index\segments_2
+    }
+
+    /**
+     * 根据 term 删除 document
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDeleteDocument() throws Exception {
+        testCreateIndexWithDifferentFields();
+        Directory directory = FSDirectory.open(Paths.get(LUCENE_INDEX));
+        IndexWriterConfig config = new IndexWriterConfig();
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        indexWriter.deleteDocuments(new Term("name", "game"));
+        indexWriter.close();
+        System.out.println("根据 term 删除 document");
+
+        // 执行方法后索引目录文件如下
+        // D:\temp\lucene\index\write.lock
+        // D:\temp\lucene\index\_0.cfe
+        // D:\temp\lucene\index\_0.cfs
+        // D:\temp\lucene\index\_0.si
+        // D:\temp\lucene\index\segments_1
+    }
+
+    /**
+     * 更新 document
+     * 执行逻辑：先删除匹配到的 document，再添加新的 document
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateDocument() throws Exception {
+        testCreateIndexWithDifferentFields();
+        Directory directory = FSDirectory.open(Paths.get(LUCENE_INDEX));
+        IndexWriterConfig config = new IndexWriterConfig();
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        Document document = new Document();
+        document.add(new TextField("id", "1002", Field.Store.YES));
+        document.add(new TextField("name", "测试test update1002", Field.Store.YES));
+        indexWriter.updateDocument(new Term("name", "lucene"), document);
+        indexWriter.close();
+        System.out.println("更新 document");
+    }
+
+    /**
+     * 删除所有的 document
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDeleteAllDocuments() throws Exception {
+        testCreateIndexWithDifferentFields();
+        Directory directory = FSDirectory.open(Paths.get(LUCENE_INDEX));
+        IndexWriterConfig config = new IndexWriterConfig();
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        indexWriter.deleteAll();
+        indexWriter.close();
+        System.out.println("删除所有的 document");
+
+        // 执行方法后索引目录文件如下
+        // D:\temp\lucene\index\write.lock
+        // D:\temp\lucene\index\segments_2
     }
 
     /**
