@@ -28,24 +28,15 @@ import java.util.List;
 public class LuceneOpsTest {
 
     public static final String LUCENE_INDEX = "D:/temp/lucene/index";
+    public static final List<Book> BOOK_ARRAY_LIST = new ArrayList<>();
 
     @Before
     public void setUp() throws Exception {
         // clean directory
         File directory = new File(LUCENE_INDEX);
         deleteDirectory(directory);
-    }
 
-    /**
-     * 创建索引
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testCreateIndex() throws Exception {
-        // 1.模拟数据采集
-        List<Book> bookArrayList = new ArrayList<>();
-
+        // 模拟数据采集
         Book bookOne = new Book();
         bookOne.setId(1);
         bookOne.setName("Lucene");
@@ -70,13 +61,22 @@ public class LuceneOpsTest {
                 "the distributed processing of large data sets across clusters of computers " +
                 "using simple programming models.");
 
-        bookArrayList.add(bookOne);
-        bookArrayList.add(bookTwo);
-        bookArrayList.add(bookThree);
+        BOOK_ARRAY_LIST.add(bookOne);
+        BOOK_ARRAY_LIST.add(bookTwo);
+        BOOK_ARRAY_LIST.add(bookThree);
+    }
 
+    /**
+     * 创建索引
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCreateIndex() throws Exception {
+        // 1.模拟数据采集
         // 2.创建 Document 文档对象
         List<Document> documents = new ArrayList<>();
-        for (Book book : bookArrayList) {
+        for (Book book : BOOK_ARRAY_LIST) {
             Document doc = new Document();
             doc.add(new TextField("id", book.getId().toString(), Field.Store.YES));
             doc.add(new TextField("name", book.getName(), Field.Store.YES));
