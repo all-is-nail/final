@@ -14,6 +14,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.example.dto.Book;
 import org.junit.Before;
 import org.junit.Test;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -105,6 +106,38 @@ public class LuceneOpsTest {
         // D:\temp\lucene\index\_0.si
         // D:\temp\lucene\index\segments_1
 
+    }
+
+    /**
+     * 创建索引（使用中文分词器 IKAnalyzer）
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCreateIndexWithIKAnalyzer() throws Exception {
+        // 1.模拟数据采集
+        // 2.创建 Document 文档对象
+        List<Document> documents = new ArrayList<>();
+
+        Document document = new Document();
+        document.add(new TextField("address", "贵州省黔东南苗族侗族自治州凯里市万潮镇", Field.Store.YES));
+        document.add(new TextField("desc", "这是一个中文的描述", Field.Store.YES));
+        documents.add(document);
+        // 3.创建Analyzer分词器,分析文档，对文档进行分词
+        // Analyzer analyzer = new StandardAnalyzer();
+        Analyzer analyzer = new IKAnalyzer();
+        // 创建Directory对象,声明索引库的位置
+        Directory directory = FSDirectory.open(Paths.get(LUCENE_INDEX));
+        // 创建IndexWriteConfig对象，写入索引需要的配置
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+        // 4.创建IndexWriter写入对象 添加文档对象document
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        for (Document doc : documents) {
+            indexWriter.addDocument(doc);
+        }
+        // 释放资源
+        indexWriter.close();
+        System.out.println("索引创建成功");
     }
 
     /**
