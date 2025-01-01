@@ -20,6 +20,10 @@ public class Version6ESOpsTest {
 
     public static final String HOST_NAME = "us.k11p.cn";
     public static final int PORT = 19200;
+
+    /**
+     * 索引名称
+     */
     public static final String INDEX = "books";
 
     /**
@@ -84,7 +88,7 @@ public class Version6ESOpsTest {
     @Test
     public void deleteIndex() throws IOException {
         RestHighLevelClient client = getClient();
-        client.indices().delete(new DeleteIndexRequest("books"), RequestOptions.DEFAULT);
+        client.indices().delete(new DeleteIndexRequest(INDEX), RequestOptions.DEFAULT);
         client.close();
     }
 
@@ -116,10 +120,10 @@ public class Version6ESOpsTest {
         RestHighLevelClient client = getClient();
         // 判断索引是否存在
         GetIndexRequest request = new GetIndexRequest();
-        request.indices("books");
+        request.indices(INDEX);
         boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
         if (!exists) {
-            CreateIndexRequest createIndexRequest = new CreateIndexRequest("books");
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest(INDEX);
             client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
         }
         // 添加文档
