@@ -112,7 +112,7 @@ public class StreamOperationTest {
                 .collect(Collectors.toSet());
 
         System.out.println(evenNumbers);
-        }
+    }
 
     /**
      * Tests the collect to Map operation.
@@ -133,5 +133,5 @@ public class StreamOperationTest {
 
         System.out.println(hobbiesByPerson);
     }
-     
+
 }
