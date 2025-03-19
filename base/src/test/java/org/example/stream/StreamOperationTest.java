@@ -134,4 +134,28 @@ public class StreamOperationTest {
         System.out.println(hobbiesByPerson);
     }
 
+    /**
+     * Tests the collect to Map operation with merge function.
+     */
+    @Test
+    public void testCollect2MapWithMergeFunction() {
+        List<Person> people = Arrays.asList(
+                new Person("Alice", Arrays.asList("Reading", "Swimming")),
+                new Person("Bob", Arrays.asList("Cycling", "Coding")),
+                new Person("Charlie", Arrays.asList("Dancing", "Cooking", "Reading"))
+        );
+
+        Map<String, List<String>> hobbiesByPerson = people.stream()
+                .collect(Collectors.toMap(
+                        Person::getName,
+                        Person::getHobbies,
+                        (hobbies1, hobbies2) -> {
+                            hobbies1.addAll(hobbies2);
+                            return hobbies1;
+                        }
+                ));
+
+        System.out.println(hobbiesByPerson);
+    }
+
 }
