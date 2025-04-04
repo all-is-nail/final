@@ -10,6 +10,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.RestClient;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,6 +29,29 @@ public class ESOpsTest {
      * 索引名称
      */
     public static final String INDEX = "books";
+    
+    /**
+     * Elasticsearch client for all test methods
+     */
+    private ElasticsearchClient client;
+
+    /**
+     * Initialize client before each test
+     */
+    @Before
+    public void setup() {
+        client = getClient();
+    }
+    
+    /**
+     * Close client after each test
+     */
+    @After
+    public void cleanup() throws IOException {
+        if (client != null) {
+            client.close();
+        }
+    }
 
     /**
      * 测试连接
@@ -97,10 +122,14 @@ public class ESOpsTest {
      */
     @Test
     public void createIndex() throws IOException {
-        ElasticsearchClient client = getClient();
+        // Check if index exists first
+        boolean exists = client.indices().exists(c -> c.index(INDEX)).value();
+        if (exists) {
+            System.out.println("Index '" + INDEX + "' already exists, skipping creation");
+            return;
+        }
         client.indices().create(c -> c
                 .index(INDEX));
-        client.close();
     }
 
     /**
@@ -110,10 +139,8 @@ public class ESOpsTest {
      */
     @Test
     public void checkIndexExists() throws IOException {
-        ElasticsearchClient client = getClient();
         boolean exists = client.indices().exists(c -> c.index(INDEX)).value();
         Assert.assertTrue(exists);
-        client.close();
     }
 
     /**
@@ -123,9 +150,7 @@ public class ESOpsTest {
      */
     @Test
     public void deleteIndex() throws IOException {
-        ElasticsearchClient client = getClient();
         client.indices().delete(c -> c.index(INDEX));
-        client.close();
     }
 
     /**
@@ -135,13 +160,11 @@ public class ESOpsTest {
      */
     @Test
     public void searchIndex() throws IOException {
-        ElasticsearchClient client = getClient();
         // 查询索引内容
         SearchResponse<Book> response = client.search(s -> s
                 .index(INDEX)
                 .query(q -> q.matchAll(m -> m)), Book.class);
         response.hits().hits().forEach(h -> System.out.println(h.source()));
-        client.close();
     }
 
     /**
@@ -151,7 +174,6 @@ public class ESOpsTest {
      */
     @Test
     public void getSingleDocument() throws IOException {
-        ElasticsearchClient client = getClient();
         GetResponse<Book> response = client.get(g -> g.index(INDEX).id(String.valueOf(1)), Book.class);
         if (response.found()) {
             Book book = response.source();
@@ -159,7 +181,6 @@ public class ESOpsTest {
         } else {
             System.out.println("the doc is not found");
         }
-        client.close();
     }
 
     /**
@@ -169,8 +190,6 @@ public class ESOpsTest {
      */
     @Test
     public void getDocumentsBySize() throws IOException {
-        ElasticsearchClient client = getClient();
-        
         // 设置查询参数，获取所有文档
         SearchResponse<Book> response = client.search(s -> s
                 .index(INDEX)
@@ -190,7 +209,6 @@ public class ESOpsTest {
         });
         
         Assert.assertFalse("No documents found in index", books.isEmpty());
-        client.close();
     }
 
     /**
@@ -200,11 +218,10 @@ public class ESOpsTest {
      */
     @Test
     public void addDocument() throws IOException {
-        ElasticsearchClient client = getClient();
         // 判断索引是否存在
         boolean exists = client.indices().exists(c -> c.index(INDEX)).value();
         if (!exists) {
-            createIndex();
+            client.indices().create(c -> c.index(INDEX));
         }
         // 添加文档
         Book book = new Book(1,
@@ -219,7 +236,6 @@ public class ESOpsTest {
                 .index(INDEX)
                 .id(String.valueOf(book.getId()))
                 .document(book));
-        client.close();
     }
 
     /**
@@ -229,7 +245,6 @@ public class ESOpsTest {
      */
     @Test
     public void updateDocument() throws IOException {
-        ElasticsearchClient client = getClient();
         // 更新文档
         Book book = new Book(1,
                 "Java编程思想",
@@ -246,7 +261,6 @@ public class ESOpsTest {
                 Book.class);
 
         System.out.println(response);
-        client.close();
     }
 
     /**
@@ -256,13 +270,11 @@ public class ESOpsTest {
      */
     @Test
     public void deleteDocument() throws IOException {
-        ElasticsearchClient client = getClient();
         // 删除文档
         DeleteResponse response = client.delete(d -> d
                 .index(INDEX)
                 .id(String.valueOf(1)));
         System.out.println(response);
-        client.close();
     }
 
     /**
@@ -272,8 +284,6 @@ public class ESOpsTest {
      */
     @Test
     public void deleteAllDocuments() throws IOException {
-        ElasticsearchClient client = getClient();
-        
         // 使用DeleteByQuery删除所有文档
         client.deleteByQuery(d -> d
                 .index(INDEX)
@@ -291,8 +301,6 @@ public class ESOpsTest {
         
         System.out.println("Documents remaining after deletion: " + response.hits().total().value());
         Assert.assertEquals("All documents should be deleted", 0, response.hits().total().value());
-        
-        client.close();
     }
 
     /**
@@ -302,8 +310,6 @@ public class ESOpsTest {
      */
     @Test
     public void bulkAddDocuments() throws IOException {
-        ElasticsearchClient client = getClient();
-
         // 准备批量文档
         Book book1 = new Book(1, "Spring实战", "Craig Walls", 90, new Date(), "框架", "计算机", "人民邮电出版社");
         Book book2 = new Book(2, "MySQL技术内幕", "姜承尧", 80, new Date(), "数据库", "计算机", "机械工业出版社");
@@ -343,8 +349,6 @@ public class ESOpsTest {
         }
 
         client.bulk(br.build());
-
-        client.close();
     }
 
 
@@ -355,7 +359,6 @@ public class ESOpsTest {
      */
     @Test
     public void bulkDeleteDocuments() throws IOException {
-        ElasticsearchClient client = getClient();
         // 创建要删除的ID列表
         List<Integer> idsToDelete = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
@@ -374,7 +377,6 @@ public class ESOpsTest {
 
         // 执行批量删除
         client.bulk(br.build());
-        client.close();
     }
 
 }
