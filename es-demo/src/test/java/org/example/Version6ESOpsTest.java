@@ -18,8 +18,8 @@ import java.io.IOException;
 
 public class Version6ESOpsTest {
 
-    public static final String HOST_NAME = "us.k11p.cn";
-    public static final int PORT = 19200;
+    public static final String HOST_NAME = "localhost";
+    public static final int PORT = 9200;
 
     /**
      * 索引名称
