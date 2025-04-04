@@ -76,7 +76,7 @@ public class Version6ESOpsTest {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(INDEX);
         boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
-        System.out.println("Index exists: " + exists);
+        Assert.assertTrue(exists);
         client.close();
     }
 
