@@ -116,6 +116,19 @@ public class ESOpsTest {
     }
 
     /**
+     * 删除索引
+     *
+     * @throws IOException
+     */
+    @Test
+    public void deleteIndex() throws IOException {
+        boolean exists = client.indices().exists(c -> c.index(INDEX)).value();
+        if (exists) {
+            client.indices().delete(c -> c.index(INDEX));
+        }
+    }
+
+    /**
      * 创建索引
      *
      * @throws IOException
@@ -141,16 +154,6 @@ public class ESOpsTest {
     public void checkIndexExists() throws IOException {
         boolean exists = client.indices().exists(c -> c.index(INDEX)).value();
         Assert.assertTrue(exists);
-    }
-
-    /**
-     * 删除索引
-     *
-     * @throws IOException
-     */
-    @Test
-    public void deleteIndex() throws IOException {
-        client.indices().delete(c -> c.index(INDEX));
     }
 
     /**
