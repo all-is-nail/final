@@ -59,7 +59,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>org.example.essearchdemo.EsSearchDemoApplication</mainClass>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
                 <executions>
                     <execution>
