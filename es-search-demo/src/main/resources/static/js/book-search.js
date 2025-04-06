@@ -1,4 +1,7 @@
-// Function to handle book search
+/**
+ * search books
+ * @returns {void}
+ */
 function searchBooks() {
     const searchTerm = document.getElementById('searchInput').value.trim();
     if (!searchTerm) {
@@ -28,7 +31,10 @@ function searchBooks() {
         });
 }
 
-// Function to handle live search
+/**
+ * live search
+ * @returns {void}
+ */
 function liveSearch() {
     const searchTerm = document.getElementById('liveSearchInput').value.trim();
     if (!searchTerm || searchTerm.length <= 2) {
@@ -58,7 +64,11 @@ function liveSearch() {
         });
 }
 
-// Function to display search results
+/**
+ * display search results
+ * @param {Array} books - the books to display
+ * @returns {void}
+ */
 function displayResults(books) {
     const resultsDiv = document.getElementById('results');
     
@@ -87,7 +97,12 @@ function displayResults(books) {
     resultsDiv.innerHTML = html;
 }
 
-// Debounce function to limit how often the search is triggered
+/**
+ * debounce function to limit the frequency of the search
+ * @param {Function} func - the function to debounce
+ * @param {number} delay - the delay time (milliseconds)
+ * @returns {Function} the debounced function
+ */
 function debounce(func, delay) {
     let timeoutId;
     return function(...args) {
