@@ -67,4 +67,21 @@ button {
 .no-results {
     color: #f44336;
     font-style: italic;
+}
+
+.search-info {
+    font-size: 14px;
+    color: #777;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.live-search-container {
+    margin-top: 10px;
+}
+
+#liveSearchInput {
+    width: 400px;
+    border: 2px solid #4CAF50;
+    border-radius: 4px;
 } 
