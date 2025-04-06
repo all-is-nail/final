@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            font-size: 16px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .book-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .book-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .book-details {
+            color: #666;
+            margin-top: 5px;
+        }
+        .no-results {
+            color: #f44336;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book Search</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter part of a book name...">
+        <button onclick="searchBooks()">Search</button>
+    </div>
+    
+    <div id="results" class="results"></div>
+
+    <script>
+        // Function to handle book search
+        function searchBooks() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (!searchTerm) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('results').innerHTML = '<p>Searching...</p>';
+            
+            // Make API request
+            fetch(`/api/book/search?name=${encodeURIComponent(searchTerm)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(books => {
+                    displayResults(books);
+                })
+                .catch(error => {
+                    console.error('Error searching for books:', error);
+                    document.getElementById('results').innerHTML = 
+                        '<p class="no-results">Error searching for books. Please try again later.</p>';
+                });
+        }
+        
+        // Function to display search results
+        function displayResults(books) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!books || books.length === 0) {
+                resultsDiv.innerHTML = '<p class="no-results">No books found matching your search.</p>';
+                return;
+            }
+            
+            let html = `<h2>Found ${books.length} book(s):</h2>`;
+            
+            books.forEach(book => {
+                html += `
+                    <div class="book-item">
+                        <div class="book-name">${book.name}</div>
+                        <div class="book-details">
+                            <p>Author: ${book.author || 'N/A'}</p>
+                            <p>Category: ${book.category || 'N/A'}</p>
+                            <p>Publisher: ${book.publisher || 'N/A'}</p>
+                            <p>Price: $${book.price || '0'}</p>
+                            <p>Description: ${book.description || 'No description available'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Allow searching by pressing Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                searchBooks();
+            }
+        });
+    </script>
+</body>
+</html> 
