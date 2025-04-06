@@ -4,6 +4,7 @@ import org.example.essearchdemo.model.Book;
 import org.example.essearchdemo.repository.BookRepository;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,6 +30,11 @@ public class BookController {
     @GetMapping
     public Iterable<Book> findAll() {
         return repository.findAll();
+    }
+
+    @GetMapping("/search")
+    public List<Book> searchByName(@RequestParam(name = "name") String name) {
+        return repository.findByNameContainingIgnoreCase(name);
     }
 
     @PutMapping("/{id}")
