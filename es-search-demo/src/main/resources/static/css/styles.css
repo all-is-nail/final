@@ -1,0 +1,70 @@
+/* Common styles */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+/* Index page styles */
+.nav-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.nav-link:hover {
+    background-color: #45a049;
+}
+
+/* Book search page styles */
+.search-container {
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    padding: 8px;
+    width: 300px;
+    font-size: 16px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.results {
+    margin-top: 20px;
+}
+
+.book-item {
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+
+.book-name {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.book-details {
+    color: #666;
+    margin-top: 5px;
+}
+
+.no-results {
+    color: #f44336;
+    font-style: italic;
+} 
