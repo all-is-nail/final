@@ -32,6 +32,7 @@ public class OptionalTest {
         Optional<String> optional = Optional.of("Hello, World!");
         
         // Use map to transform the value if present
+        // use lambda expression to transform the value
         Optional<Integer> lengthOptional = optional.map(str -> str.length());
         
         // Print the transformed value
@@ -40,10 +41,10 @@ public class OptionalTest {
         
         // Example with null value
         Optional<String> nullOptional = Optional.ofNullable(null);
+        // use method reference to transform the value
         Optional<Integer> nullLengthOptional = nullOptional.map(String::length);
         
         // Print the result (will be empty Optional)
-        System.out.println("Null optional length: " + 
-            nullLengthOptional.orElse(-1));
+        System.out.println("Null optional length: " + nullLengthOptional.orElse(-1));
     }
 }
